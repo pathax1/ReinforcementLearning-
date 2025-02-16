@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pac-Man RL</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #222;
+            color: white;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        #game_output img {
+            width: 300px;
+            margin: 10px;
+            border: 2px solid white;
+        }
+        .loading {
+            font-size: 16px;
+            margin-top: 20px;
+            color: yellow;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Pac-Man RL Agent</h1>
+
+    <label for="model">Choose RL Model:</label>
+    <select id="model">
+        <option value="Q-learning">Q-learning</option>
+        <option value="Monte Carlo">Monte Carlo</option>
+    </select>
+
+    <br>
+    <button onclick="runGame()">Run Game</button>
+    
+    <div id="loading" class="loading"></div>
+    <div id="game_output">
+        <p>Game frames will appear here...</p>
+    </div>
+
+    <script>
+        function runGame() {
+            var model = document.getElementById("model").value;
+            document.getElementById("loading").innerText = "Running the game... Please wait.";
+            fetch('/run_game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: model })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("loading").innerText = ""; // Remove loading message
+                let output = document.getElementById("game_output");
+                output.innerHTML = ""; // Clear previous frames
+                if (data.frames) {
+                    data.frames.forEach(frame => {
+                        let img = document.createElement("img");
+                        img.src = frame;
+                        output.appendChild(img);
+                    });
+                } else {
+                    output.innerHTML = "<p>Error: No frames received.</p>";
+                }
+            })
+            .catch(error => {
+                document.getElementById("loading").innerText = "Error occurred!";
+                console.error("Error running game:", error);
+            });
+        }
+    </script>
+
+</body>
+</html>
